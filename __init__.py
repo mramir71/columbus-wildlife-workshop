@@ -1,0 +1,1 @@
+from .Flickr.flickr import Flickr

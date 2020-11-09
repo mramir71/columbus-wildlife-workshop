@@ -1,6 +1,7 @@
 import requests
 import json
 import time
+import zipfile
 
 class Flickr:
 
@@ -51,18 +52,12 @@ class Flickr:
         return json_data
 
     def search(self, q, date_since="2019-12-01", saveTo=False):
+        print("Hello!!")
     ##AFRICA BBOX - FOR GIRAFFES - TO DO: modify search() params to allow easy insert for bounding box coordinates 
 #         base_url = '''https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=6ab5883201c84be19c9ceb0a4f5ba959&text={text}&min_taken_date{min_date}&extras=description%2Cdate_upload%2C+date_taken%2C+owner_name%2C+last_update%2C+geo%2C+tags%2C+views%2C+media%2C+url_l&page={page}&bbox= -18.615646%2C-34.936608%2C50.993729%2C35.266926&format=json&nojsoncallback=1'''
 
-    #WITHOUT BBOX
         base_url = '''https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=6ab5883201c84be19c9ceb0a4f5ba959&text={text}&min_taken_date{min_date}&extras=description%2Cdate_upload%2C+date_taken%2C+owner_name%2C+last_update%2C+geo%2C+tags%2C+views%2C+media%2C+url_l&page={page}&format=json&nojsoncallback=1'''
         
-
-        '''Wont need the following code since participants will not be saving images to a database - instead we should save results to a zip file'''        
-#         if (saveTo and not self.db):
-#             saveTo = False
-#             print("Please provide 'db' argument with an instance to database to save photo(s).")
-
         keyword = q.replace(' ','+')
         json_data = []
         url = base_url.format(text=keyword,min_date=date_since,page='1') #tags=keyword
@@ -70,10 +65,6 @@ class Flickr:
         print(r)
         response_data = r.json()
         data = self.clean_data(response_data)
-        if (saveTo):
-            print('saving...')
-            for item in data:
-                self.db.addItem(item, saveTo)
         json_data.append(data)
         pages = response_data['photos']['pages']
         print(pages,'Found with',keyword)
@@ -82,16 +73,12 @@ class Flickr:
             url = base_url.format(text=keyword,min_date=date_since,page=str(page)) #tags=keyword
             r = requests.get(url)
             try:
-                print('in try')
                 response_data = r.json()
             except JSONDecodeError:
                 print("r: ", r)
             data = self.clean_data(response_data)
-            if (saveTo):
-                print('saving...')
-                for item in data:
-                    self.db.addItem(item, saveTo)
             json_data.append(data)
+            
         return json_data
     
     #method to get user locations with flickr.people.getInfo()
